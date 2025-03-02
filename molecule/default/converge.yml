@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include role"
+      ansible.builtin.include_role:
+        name: "../../../aws-rotate-iam-key"
+      vars:
+        iam_username: "testuser1"
+        aws_cli_user: "awscliuser1"

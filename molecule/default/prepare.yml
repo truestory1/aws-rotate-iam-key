@@ -1,0 +1,35 @@
+---
+- name: Prepare
+  hosts: all
+  vars:
+    iam_username: "testuser1"
+    aws_cli_user: "awscliuser1"
+  tasks:
+    - name: Create a test IAM user
+      amazon.aws.iam_user:
+        name: "{{ iam_username }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+
+    - name: Check current access keys
+      amazon.aws.iam_access_key_info:
+        user_name: "{{ iam_username }}"
+      delegate_to: localhost
+      register: __access_keys
+      run_once: true
+
+    - name: Create access key if none exists
+      when: __access_keys.access_keys | length == 0
+      amazon.aws.iam_access_key:
+        user_name: "{{ iam_username }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+
+    - name: Create local linux user
+      ansible.builtin.user:
+        name: "{{ aws_cli_user }}"
+        state: present
+        createhome: yes
+      become: yes

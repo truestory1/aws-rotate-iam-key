@@ -1,0 +1,82 @@
+---
+- name: Check current access keys
+  amazon.aws.iam_access_key_info:
+    user_name: "{{ iam_username }}"
+  delegate_to: localhost
+  register: __access_keys
+  run_once: true
+
+- name: Initialize list of old keys
+  set_fact:
+    __old_keys: []
+  run_once: true
+
+- name: Filter keys older than 1 minute
+  set_fact:
+    __old_keys: "{{ __old_keys + [ item ] }}"
+  loop: "{{ __access_keys.access_keys }}"
+  when: >
+    (
+      (ansible_date_time.iso8601 | regex_replace(':(?=[0-9]{2}$)', '') | to_datetime('%Y-%m-%dT%H:%M:%S%z')) -
+      (item.create_date | regex_replace(':(?=[0-9]{2}$)', '') | to_datetime('%Y-%m-%dT%H:%M:%S%z'))
+    ).total_seconds() > 60
+  run_once: true
+
+- name: Recreate access keys
+  when:
+    - __old_keys | length > 0
+  delegate_to: localhost
+  run_once: true
+  block:
+    - name: Deactive and remove all current keys
+      amazon.aws.iam_access_key:
+        user_name: "{{ iam_username }}"
+        id: "{{ item.access_key_id }}"
+        state: absent
+      loop: "{{ __access_keys.access_keys }}"
+
+    - name: Create a new access key
+      amazon.aws.iam_access_key:
+        user_name: "{{ iam_username }}"
+        state: present
+      register: __new_access_key
+
+- name: If the key has been changed we do following steps
+  when: __new_access_key is changed
+  block:
+    - name: Write access key and secret to file
+      ansible.builtin.copy:
+        content: |
+          [default]
+          aws_access_key_id = {{ __new_access_key.access_key_id }}
+          aws_secret_access_key = {{ __new_access_key.secret_access_key }}
+        dest: "/tmp/aws_credentials"
+        mode: "0600"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Get linux user home directory
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ aws_cli_user }}"
+      register: __user_info
+
+    - name: Set home directory fact
+      set_fact:
+        __home_dir: "{{ __user_info.ansible_facts.getent_passwd[aws_cli_user][4] }}"
+
+    - name: Create .aws directory
+      ansible.builtin.file:
+        dest: "{{ __home_dir }}/.aws"
+        state: directory
+        owner: "{{ aws_cli_user }}"
+        group: "{{ aws_cli_group | default(omit) }}"
+        mode: "0700"
+
+    - name: Copy credentials to target host
+      ansible.builtin.copy:
+        src: "/tmp/aws_credentials"
+        dest: "{{ __home_dir }}/.aws/credentials"
+        owner: "{{ aws_cli_user }}"
+        group: "{{ aws_cli_group | default(omit)}}"
+        mode: "0600"

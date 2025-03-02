@@ -1,0 +1,5 @@
+---
+# iam_username: XXXX
+# aws_cli_user: XXXX
+# aws_cli_group: XXXX
+aws_region: us-east-1

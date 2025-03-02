@@ -1,0 +1,9 @@
+---
+- name: Prepare
+  hosts: localhost
+  tasks:
+    - name: Delete a test IAM user
+      amazon.aws.iam_user:
+        name: testuser1
+        state: absent
+      # delegate_to: localhost

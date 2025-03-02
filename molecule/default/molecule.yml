@@ -1,0 +1,23 @@
+---
+lint: |
+  set -e
+  yamllint .
+  ansible-lint -f full
+dependency:
+  name: galaxy
+driver:
+  name: podman
+platforms:
+  - name: awsrotateiamkey01
+    image: rockylinux:9
+    pre_build_image: false
+    privileged: false
+  - name: awsrotateiamkey02
+    image: rockylinux:9
+    pre_build_image: false
+    privileged: false
+provisioner:
+  name: ansible
+
+verifier:
+  name: ansible
