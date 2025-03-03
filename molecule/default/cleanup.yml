@@ -6,4 +6,3 @@
       amazon.aws.iam_user:
         name: testuser1
         state: absent
-      # delegate_to: localhost
