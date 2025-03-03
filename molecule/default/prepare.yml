@@ -33,3 +33,38 @@
         state: present
         createhome: yes
       become: yes
+
+    - name: Ensure awscli is absent
+      ansible.builtin.package:
+        name: awscli
+        state: absent
+      become: yes
+
+    - name: Install dependencies
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      become: yes
+      loop:
+        - unzip
+        - curl-minimal
+
+    - name: Download and install awscli
+      ansible.builtin.get_url:
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp/awscli-exe-linux-x86_64.zip"
+      become: yes
+
+    - name: Unzip awscli
+      ansible.builtin.unarchive:
+        src: "/tmp/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp"
+        remote_src: yes
+      become: yes
+
+    - name: Install awscli
+      ansible.builtin.command:
+        cmd: "/tmp/aws/install"
+      become: yes
+      args:
+        creates: "/usr/local/bin/aws"
