@@ -18,5 +18,10 @@ platforms:
     privileged: false
 provisioner:
   name: ansible
+  inventory:
+    group_vars:
+      all:
+        iam_username: testuser1
+        aws_cli_user: awscliuser1
 verifier:
   name: ansible
