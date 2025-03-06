@@ -1,18 +1,17 @@
 ---
 - name: Verify
   hosts: all
-  vars:
-    iam_username: "testuser1"
-    aws_cli_user: "awscliuser1"
   tasks:
     - name: Run awscli command as cli_user
       ansible.builtin.command:
-        cmd: "/usr/local/bin/aws sts get-caller-identity --no-cli-pager"
+        cmd: "/usr/local/bin/aws sts get-caller-identity --no-cli-pager --output json"
       become: yes
       become_user: "{{ aws_cli_user }}"
       register: __awscli_output
       changed_when: false
 
-    - name: Debug awscli output
+    - name: Fail if output does not contain user id in ARN
       ansible.builtin.debug:
         var: __awscli_output.stdout
+      failed_when:
+        - "__awscli_output.stdout | from_json | json_query('Arn') is not search('user')"
