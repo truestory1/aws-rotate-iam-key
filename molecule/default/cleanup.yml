@@ -4,5 +4,5 @@
   tasks:
     - name: Delete a test IAM user
       amazon.aws.iam_user:
-        name: testuser1
+        name: "{{ iam_username }}"
         state: absent
