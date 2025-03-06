@@ -29,3 +29,19 @@ None.
       iam_user: YOUR_IAM_USER
 ```
 
+## Testing with Molecule
+
+This role uses Molecule for testing. To run the tests, follow these steps:
+
+1. Install Molecule and Podman:
+    ```sh
+    pip install molecule[podman]
+    ```
+
+2. Run the tests:
+    ```sh
+    molecule test
+    ```
+
+For more information on Molecule, visit the [Molecule documentation](https://molecule.readthedocs.io/).
+
