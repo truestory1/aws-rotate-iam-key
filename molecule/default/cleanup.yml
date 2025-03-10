@@ -6,3 +6,11 @@
       amazon.aws.iam_user:
         name: "{{ iam_username }}"
         state: absent
+      delegate_to: localhost
+
+    - name: Delete a test IAM user secret
+      community.aws.secretsmanager_secret:
+        name: "users/aws/{{ iam_username }}"
+        state: absent
+      delegate_to: localhost
+      run_once: true
