@@ -43,7 +43,7 @@
 
 - name: If the key has been changed we do following steps
   # noqa: no-handler
-  when: __new_access_key is changed
+  when: __new_access_key.changed
   block:
     - name: Create temporary file
       ansible.builtin.tempfile:
