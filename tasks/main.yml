@@ -7,13 +7,13 @@
   run_once: true
 
 - name: Initialize list of old keys
-  set_fact:
+  ansible.builtin.set_fact:
     __old_keys: []
   run_once: true
 
 - name: Filter old keys
-  set_fact:
-    __old_keys: "{{ __old_keys + [ item ] }}"
+  ansible.builtin.set_fact:
+    __old_keys: "{{ __old_keys + [item] }}"
   loop: "{{ __access_keys.access_keys }}"
   when: >
     (
@@ -42,9 +42,9 @@
       register: __new_access_key
 
 - name: If the key has been changed we do following steps
-  when: __new_access_key is changed
+  # noqa: no-handler
+  when: __new_access_key.changed
   block:
-
     - name: Create temporary file
       ansible.builtin.tempfile:
         state: file
@@ -54,11 +54,11 @@
       delegate_to: localhost
 
     - name: Setup secrets entry as json
-      set_fact:
+      ansible.builtin.set_fact:
         __secrets_entry:
-            "AWS_ACCESS_KEY_ID": "{{ __new_access_key.access_key_id }}"
-            AWS_SECRET_ACCESS_KEY: "{{ lookup('community.general.random_string', length=12) }}"
-            #"AWS_SECRET_ACCESS_KEY": "{{ __new_access_key.secret_access_key }}"
+          "AWS_ACCESS_KEY_ID": "{{ __new_access_key.access_key_id }}"
+          AWS_SECRET_ACCESS_KEY: "{{ lookup('community.general.random_string', length=12) }}"
+          # "AWS_SECRET_ACCESS_KEY": "{{ __new_access_key.secret_access_key }}"
       run_once: true
       delegate_to: localhost
 
@@ -88,7 +88,7 @@
       register: __user_info
 
     - name: Set home directory fact
-      set_fact:
+      ansible.builtin.set_fact:
         __home_dir: "{{ __user_info.ansible_facts.getent_passwd[aws_cli_user][4] }}"
 
     - name: Create .aws directory
@@ -104,7 +104,7 @@
         src: "{{ __tempfile_1.path }}"
         dest: "{{ __home_dir }}/.aws/credentials"
         owner: "{{ aws_cli_user }}"
-        group: "{{ aws_cli_group | default(omit)}}"
+        group: "{{ aws_cli_group | default(omit) }}"
         mode: "0600"
 
     - name: Remove temporary file
