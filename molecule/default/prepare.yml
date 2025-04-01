@@ -6,6 +6,7 @@
   #   aws_cli_user: "awscliuser1"
   tasks:
     - name: Create a test IAM user
+      # noqa: run-once[task]
       amazon.aws.iam_user:
         name: "{{ iam_username }}"
         state: present
@@ -13,6 +14,7 @@
       run_once: true
 
     - name: Check current access keys
+      # noqa: run-once[task]
       amazon.aws.iam_access_key_info:
         user_name: "{{ iam_username }}"
       delegate_to: localhost
@@ -20,6 +22,7 @@
       run_once: true
 
     - name: Create access key if none exists
+      # noqa: run-once[task]
       when: __access_keys.access_keys | length == 0
       amazon.aws.iam_access_key:
         user_name: "{{ iam_username }}"
@@ -31,40 +34,41 @@
       ansible.builtin.user:
         name: "{{ aws_cli_user }}"
         state: present
-        createhome: yes
-      become: yes
+        createhome: true
+      become: true
 
     - name: Ensure awscli is absent
       ansible.builtin.package:
         name: awscli
         state: absent
-      become: yes
+      become: true
 
     - name: Install dependencies
       ansible.builtin.package:
         name: "{{ item }}"
         state: present
-      become: yes
+      become: true
       loop:
         - unzip
         - curl-minimal
 
     - name: Download and install awscli
+      # noqa: risky-file-permissions
       ansible.builtin.get_url:
         url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
         dest: "/tmp/awscli-exe-linux-x86_64.zip"
-      become: yes
+      become: true
 
     - name: Unzip awscli
       ansible.builtin.unarchive:
         src: "/tmp/awscli-exe-linux-x86_64.zip"
         dest: "/tmp"
-        remote_src: yes
-      become: yes
+        remote_src: true
+      become: true
 
     - name: Install awscli
       ansible.builtin.command:
         cmd: "/tmp/aws/install"
-      become: yes
+      become: true
       args:
         creates: "/usr/local/bin/aws"

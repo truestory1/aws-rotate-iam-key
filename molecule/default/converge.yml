@@ -4,4 +4,4 @@
   tasks:
     - name: "Include role"
       ansible.builtin.include_role:
-        name: "../../../aws-rotate-iam-key"
+        name: "aws-rotate-iam-key"

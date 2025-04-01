@@ -9,6 +9,8 @@
       delegate_to: localhost
 
     - name: Delete a test IAM user secret
+      # noqa: run-once[task]
+      when: create_aws_secrets
       community.aws.secretsmanager_secret:
         name: "users/aws/{{ iam_username }}"
         state: absent
