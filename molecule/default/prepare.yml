@@ -1,9 +1,6 @@
 ---
 - name: Prepare
   hosts: all
-  # vars:
-  #   iam_username: "testuser1"
-  #   aws_cli_user: "awscliuser1"
   tasks:
     - name: Create a test IAM user
       # noqa: run-once[task]

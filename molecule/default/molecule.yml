@@ -12,15 +12,19 @@ platforms:
     image: rockylinux:9
     pre_build_image: false
     privileged: false
+    groups:
+      - internal
   - name: awsrotateiamkey02
     image: rockylinux:9
     pre_build_image: false
     privileged: false
+    groups:
+      - internal
 provisioner:
   name: ansible
   inventory:
     group_vars:
-      all:
+      internal:
         iam_username: testuser1
         aws_cli_user: awscliuser1
 verifier:
