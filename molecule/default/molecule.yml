@@ -8,24 +8,32 @@ dependency:
 driver:
   name: containers
 platforms:
-  - name: awsrotateiamkey01
+  - name: t01
     image: rockylinux:9
     pre_build_image: false
     privileged: false
     groups:
       - internal
-  - name: awsrotateiamkey02
+  - name: t02
     image: rockylinux:9
     pre_build_image: false
     privileged: false
     groups:
-      - internal
+      - external
 provisioner:
   name: ansible
   inventory:
     group_vars:
-      internal:
+      all:
         iam_username: testuser1
-        aws_cli_user: awscliuser1
+        users_map_data:
+          testuser1: xyz01234
+          testuser2: xyz56789
+      internal:
+        users_map_filename: /tmp/users_map
+      # internal:
+      #   aws_cli_user: testuser1
+      # external:
+      #   aws_cli_user: xyz01234
 verifier:
   name: ansible

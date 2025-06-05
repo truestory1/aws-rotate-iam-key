@@ -2,6 +2,33 @@
 - name: Prepare
   hosts: all
   tasks:
+
+    - name: Dump users_map to file
+      ansible.builtin.copy:
+        content: |
+          {% for user, key in users_map_data.items() %}
+          {{ user }}:{{ key }}
+          {% endfor %}
+        dest: "{{ users_map_filename }}"
+        mode: "0644"
+      when: "'internal' in group_names"
+      become: true
+
+    - name: Copy user_maps_data to users_map
+      ansible.builtin.set_fact:
+        users_map: "{{ users_map_data }}"
+      when: "'internal' in group_names"
+
+    - name: Set fact for aws_cli_user based on key of iam_username for internal groups
+      ansible.builtin.set_fact:
+        aws_cli_user: "{{ users_map[iam_username] }}"
+      when: "'internal' in group_names"
+
+    - name: Set fact for aws_cli_user based on value of iam_username for external groups
+      ansible.builtin.set_fact:
+        aws_cli_user: "{{ iam_username }}"
+      when: "'external' in group_names"
+
     - name: Create a test IAM user
       # noqa: run-once[task]
       amazon.aws.iam_user:

@@ -2,6 +2,41 @@
 - name: Verify
   hosts: all
   tasks:
+    - name: Read users map from file
+      ansible.builtin.slurp:
+        src: "{{ users_map_filename }}"
+      register: __users_map_content
+      when:
+        - users_map_filename is defined
+        - "'internal' in group_names"
+      run_once: true
+
+    - name: Set users_map fact from file content
+      ansible.builtin.set_fact:
+        users_map: "{{ __users_map_content.content | b64decode | split('\n') | select('!=', '') | map('split', ':') | community.general.dict }}"
+      when:
+        - users_map_filename is defined
+        - "'internal' in group_names"
+      run_once: true
+
+    - name: Debug users_map
+      ansible.builtin.debug:
+        var: users_map
+      when:
+        - users_map_filename is defined
+        - "'internal' in group_names"
+      run_once: true
+
+    - name: Set fact for aws_cli_user based on key of iam_username for internal groups
+      ansible.builtin.set_fact:
+        aws_cli_user: "{{ users_map[iam_username]  }}"
+      when: "'internal' in group_names"
+
+    - name: Set fact for aws_cli_user based on value of iam_username for external groups
+      ansible.builtin.set_fact:
+        aws_cli_user: "{{ iam_username }}"
+      when: "'external' in group_names"
+
     - name: Run awscli command as cli_user
       ansible.builtin.command:
         cmd: "/usr/local/bin/aws sts get-caller-identity --no-cli-pager --output json"
@@ -9,6 +44,10 @@
       become_user: "{{ aws_cli_user }}"
       register: __awscli_output
       changed_when: false
+
+    - name: Print aws_cli_user
+      ansible.builtin.debug:
+        msg: "aws_cli_user is set to {{ aws_cli_user }}"
 
     - name: Fail if output does not contain user id in ARN
       ansible.builtin.debug:

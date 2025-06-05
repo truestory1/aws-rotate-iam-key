@@ -3,7 +3,7 @@
 # aws_cli_user: XXXX
 # aws_cli_group: XXXX
 aws_region: us-east-1
-aws_key_rotate: 120 # seconds
+aws_key_rotate: 10 # seconds
 # aws_secret_name: XXXX
 # aws_secret_name: "users/aws/{{ iam_username }}"
 create_aws_secrets: false
